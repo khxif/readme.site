@@ -7,3 +7,9 @@ export const usersTable = pgTable('users', {
   authProviderId: varchar('auth_provider_id', { length: 255 }).notNull().unique(),
   profilePicture: varchar('profile_picture', { length: 512 }),
 });
+
+export const projectsTable = pgTable('projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull(),
+  createdBy: uuid('created_by').notNull().references(() => usersTable.id),
+});
