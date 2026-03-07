@@ -13,13 +13,7 @@ export async function googleLogin(c: Context) {
     .where(eq(usersTable.email, email))
     .limit(1);
 
-  if (!existingUser) {
-    return c.json({
-      success: true,
-      message: 'User already exists',
-      user: existingUser[0],
-    });
-  }
+  if (existingUser) return c.json({ success: true, message: 'User already exists' });
 
   const [newUser] = await db
     .insert(usersTable)

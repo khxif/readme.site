@@ -4,4 +4,4 @@ import { TryCatch } from '../lib/try-catch.js';
 
 export const authRoutes = new Hono();
 
-authRoutes.get('/login/google', TryCatch(googleLogin));
+authRoutes.post('/login/google', TryCatch(googleLogin));
