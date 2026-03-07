@@ -4,24 +4,24 @@ import { db } from '../db/index.js';
 import { usersTable } from '../db/schema.js';
 
 export async function googleLogin(c: Context) {
-  const { name, email, profilePicture, authProviderId } = await c.req.json();
-  if (!name || !email || !authProviderId) return c.json({ error: 'Missing required fields' }, 400);
+  const user = c.get('user');
+  if (!user) return c.json({ message: 'User not found in context' }, 400);
 
   const [existingUser] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.email, email))
+    .where(eq(usersTable.email, user?.email))
     .limit(1);
 
-  if (existingUser) return c.json({ success: true, message: 'User already exists' });
+  if (existingUser) return c.json({ message: 'User already exists' }, 201);
 
   const [newUser] = await db
     .insert(usersTable)
     .values({
-      name,
-      email,
-      profilePicture,
-      authProviderId,
+      name: user?.name,
+      email: user?.email,
+      profilePicture: user?.profilePicture,
+      authProviderId: user?.authProviderId,
     })
     .returning();
 

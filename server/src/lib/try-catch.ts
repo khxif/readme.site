@@ -7,7 +7,7 @@ export function TryCatch(controller: Controller) {
     try {
       return await controller(c);
     } catch (error) {
-      console.error('Controller Error:', error);
+      console.error('Error:', error);
       return c.json({ success: false, message: 'Internal Server Error' }, 500);
     }
   };

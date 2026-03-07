@@ -28,18 +28,10 @@ export default function CallbackPage() {
         return;
       }
 
-      const user: User = {
-        name: data.session.user.user_metadata.full_name,
-        email: data.session.user.user_metadata.email,
-        profilePicture: data.session.user.user_metadata.avatar_url,
-        authProviderId: data.session.user.user_metadata.provider_id,
-      };
+      await mutateAsync();
 
-       await mutateAsync(user);
-       
-       
-       router.push('/dashboard');
-       toast.success('Successfully signed in!');
+      router.push('/dashboard');
+      toast.success('Successfully signed in!');
     }
 
     handleAuth();
