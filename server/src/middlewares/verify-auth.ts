@@ -16,14 +16,19 @@ export const verifyAuth = createMiddleware<{ Variables: Variables }>(async (c, n
 
   const token = authHeader.split(' ')[1];
 
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) return c.json({ message: 'Invalid or expired token' }, 401);
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+  if (error || !user) return c.json({ message: 'Invalid or expired token' }, 401);
 
   const [dbUser] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.authProviderId, data.user.id))
+    .where(eq(usersTable.authProviderId, user.user_metadata.provider_id))
     .limit(1);
+
+  console.log(dbUser);
 
   if (!dbUser) return c.json({ message: 'User not found' }, 401);
   c.set('user', dbUser);
