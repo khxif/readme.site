@@ -17,11 +17,13 @@ export async function getProjects(c: Context) {
 export async function createProject(c: Context) {
   const user = c.get('user');
 
-  const { name } = await c.req.json();
-  if (!name || typeof name !== 'string')
-    return c.json({ message: 'Project name is required' }, 400);
+  const { name, githubUrl } = await c.req.json();
+  if (!name || !githubUrl) return c.json({ message: 'Project name is required' }, 400);
 
-  const [project] = await db.insert(projectsTable).values({ name, createdBy: user.id }).returning();
+  const [project] = await db
+    .insert(projectsTable)
+    .values({ name, githubUrl, createdBy: user.id })
+    .returning();
 
   return c.json({ message: 'Project Created Sucessfully!' }, 201);
 }

@@ -11,5 +11,6 @@ export const usersTable = pgTable('users', {
 export const projectsTable = pgTable('projects', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
+  githubUrl: varchar('github_url', { length: 512 }).notNull(),
   createdBy: uuid('created_by').notNull().references(() => usersTable.id),
 });
