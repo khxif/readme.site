@@ -1,12 +1,13 @@
 import { apiClient } from '@/lib/api-client';
+import { CreateProjectSchemaType } from '@/zod-schemas/project';
 
 export async function getProjects() {
   const { data } = await apiClient.get('/projects');
   return data.data;
 }
 
-export async function createProject(name: string) {
-  const { data } = await apiClient.post('/projects', { name });
+export async function createProject(body: CreateProjectSchemaType) {
+  const { data } = await apiClient.post('/projects', body);
   return data;
 }
 

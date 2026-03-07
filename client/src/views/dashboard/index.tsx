@@ -1,18 +1,16 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
+import { useDeleteProjectMutation } from '@/hooks/mutations';
+import { useGetProjects } from '@/hooks/queries';
+import { queryKeys } from '@/hooks/query-keys';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Spinner } from '@/components/ui/spinner';
-import { useCreateProjectMutation, useDeleteProjectMutation } from '@/hooks/mutations';
-import { useGetProjects } from '@/hooks/queries';
-import { queryKeys } from '@/hooks/query-keys';
-
-import { CreateProjectDialog } from './create-dialog';
+import { CreateProjectDialog } from './create-project-dialog';
 import { DeleteProjectDialog } from './delete-dialog';
 import { EmptyState } from './empty-state';
 import { ProjectCard } from './project-card';
@@ -21,31 +19,17 @@ export function DashboardView() {
   const queryClient = useQueryClient();
   const { data: projects, isLoading, isError } = useGetProjects();
 
-  const { mutateAsync: createProjectMutation, isPending: isCreating } = useCreateProjectMutation();
-  const deleteMutation = useDeleteProjectMutation();
+  const { mutateAsync, isPending } = useDeleteProjectMutation();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  async function handleCreate(name: string) {
-    await createProjectMutation(name);
-    
-    await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
-    toast.success('Project created');
-  }
-
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (!deleteTargetId) return;
-    deleteMutation.mutate(deleteTargetId, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: queryKeys.projects });
-        toast.success('Project deleted');
-        setDeleteTargetId(null);
-      },
-      onError: () => {
-        toast.error('Failed to delete project');
-      },
-    });
+    await mutateAsync(deleteTargetId);
+
+    await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+    toast.success('Project deleted');
   }
 
   const hasProjects = Array.isArray(projects) && projects.length > 0;
@@ -103,12 +87,7 @@ export function DashboardView() {
         </div>
       </div>
 
-      <CreateProjectDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onSubmit={handleCreate}
-        isPending={isCreating}
-      />
+      <CreateProjectDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
 
       <DeleteProjectDialog
         open={deleteTargetId !== null}
@@ -116,7 +95,7 @@ export function DashboardView() {
           if (!open) setDeleteTargetId(null);
         }}
         onConfirm={handleDeleteConfirm}
-        isPending={deleteMutation.isPending}
+        isPending={isPending}
       />
     </div>
   );

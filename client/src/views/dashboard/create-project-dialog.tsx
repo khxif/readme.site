@@ -1,9 +1,5 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,51 +18,41 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-
-const schema = z.object({
-  name: z
-    .string()
-    .min(1, 'Project name is required')
-    .max(255, 'Project name must be 255 characters or fewer')
-    .trim(),
-});
-
-type FormValues = z.infer<typeof schema>;
+import { useCreateProjectMutation } from '@/hooks/mutations';
+import { queryKeys } from '@/hooks/query-keys';
+import { createProjectSchema, CreateProjectSchemaType } from '@/zod-schemas/project';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (name: string, onDone: () => void) => void;
-  isPending: boolean;
 }
 
-export function CreateProjectDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  isPending,
-}: CreateProjectDialogProps) {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { name: '' },
+export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
+  const queryClient = useQueryClient();
+  const { mutateAsync, isPending } = useCreateProjectMutation();
+
+  const form = useForm<CreateProjectSchemaType>({
+    resolver: zodResolver(createProjectSchema),
+    defaultValues: {
+      name: '',
+      githubUrl: '',
+    },
   });
 
-  function handleSubmit({ name }: FormValues) {
-    onSubmit(name, () => {
-      form.reset();
-      onOpenChange(false);
-    });
-  }
+  async function handleSubmit(values: CreateProjectSchemaType) {
+    await mutateAsync(values);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
 
-  function handleOpenChange(value: boolean) {
-    if (!isPending) {
-      if (!value) form.reset();
-      onOpenChange(value);
-    }
+    onOpenChange(false);
+    toast.success('Project created');
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">New project</DialogTitle>
@@ -98,22 +84,37 @@ export function CreateProjectDialog({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="githubUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GitHub URL</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. https://github.com/user/repo"
+                      autoComplete="off"
+                      disabled={isPending}
+                      className="h-9"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => handleOpenChange(false)}
+                onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isPending}
-                className="min-w-[80px]"
-              >
+              <Button type="submit" size="sm" disabled={isPending} className="min-w-[80px]">
                 {isPending ? <Spinner className="size-3.5 text-white" /> : 'Create'}
               </Button>
             </div>
