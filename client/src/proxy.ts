@@ -1,10 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export function proxy(req: NextRequest) {
-  const host = req.headers.get('host') || '';
-  const subdomain = host.split('.')[0];
+  const host = req.headers.get("host") || "";
 
-  if (subdomain === 'localhost' || subdomain === 'www') return NextResponse.next();
+  const hostname = host.split(":")[0]; // remove port
+  const parts = hostname.split(".");
+
+  // Detect subdomain
+  let subdomain: string | null = null;
+
+  if (hostname.includes("localhost")) {
+    // abc.localhost
+    if (parts.length > 1) subdomain = parts[0];
+  } else {
+    // abc.myapp.com
+    if (parts.length > 2) subdomain = parts[0];
+  }
+
+  // Ignore main domain
+  if (!subdomain || subdomain === "www") {
+    return NextResponse.next();
+  }
 
   const url = req.nextUrl.clone();
   url.pathname = `/${subdomain}${url.pathname}`;
@@ -13,5 +29,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|favicon.ico).*)'],
+  matcher: ["/((?!_next|api|favicon.ico).*)"],
 };

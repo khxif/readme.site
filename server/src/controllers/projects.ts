@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { db } from '../db/index.js';
 import { projectsTable } from '../db/schema.js';
+import { inngest } from '../inngest/client.js';
 
 export async function getProjects(c: Context) {
   const user = c.get('user');
@@ -24,6 +25,13 @@ export async function createProject(c: Context) {
     .insert(projectsTable)
     .values({ name, githubUrl, createdBy: user.id })
     .returning();
+
+  await inngest.send({
+    name: 'readme/analyze',
+    data: {
+      githubUrl,
+    },
+  });
 
   return c.json({ message: 'Project Created Sucessfully!' }, 201);
 }

@@ -1,4 +1,4 @@
-import { cleanReadme, extractItems } from '../lib/parser.js';
+import { cleanReadme, extractItems, parseGithubUrl } from '../lib/parser.js';
 import { analyzeReadmeAgent, codeGeneratorAgent } from './agents.js';
 import { inngest } from './client.js';
 
@@ -6,8 +6,18 @@ export const analyzeReadmeFlow = inngest.createFunction(
   { id: 'analyze-readme' },
   { event: 'readme/analyze' },
   async ({ event, step }) => {
-    const { cleaned, items } = await step.run('clean-readme', () => {
-      const rawReadme = event.data.readme as string;
+    const { cleaned, items } = await step.run('clean-readme', async () => {
+      
+      const githubUrl = event.data.githubUrl as string;
+      const { owner, repo } = parseGithubUrl(githubUrl);
+
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+        },
+      });
+      const data = await res.json();
+      const rawReadme = Buffer.from(data.content, 'base64').toString('utf-8');
 
       const items = extractItems(rawReadme);
       const cleaned = cleanReadme(rawReadme);
