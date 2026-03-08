@@ -6,6 +6,11 @@ export async function getProjects() {
   return data.data;
 }
 
+export async function getProjectByName(name:string) {
+  const { data } = await apiClient.get(`/projects/${name}`);
+  return data.data;
+}
+
 export async function createProject(body: CreateProjectSchemaType) {
   const { data } = await apiClient.post('/projects', body);
   return data;

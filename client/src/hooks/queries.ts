@@ -1,4 +1,4 @@
-import { getProjects } from '@/data-fetchers/projects';
+import { getProjectByName, getProjects } from '@/data-fetchers/projects';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { queryKeys } from './query-keys';
 
@@ -8,4 +8,12 @@ export function getProjectsQuery() {
 
 export function useGetProjects() {
   return useQuery(getProjectsQuery());
+}
+
+export function useGetProjectByName(name: string) {
+  return useQuery({
+    queryKey: [...queryKeys.projects, name],
+    queryFn: () => getProjectByName(name),
+    enabled: !!name,
+  });
 }

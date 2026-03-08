@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { db } from '../db/index.js';
 import { projectsTable } from '../db/schema.js';
@@ -13,6 +13,21 @@ export async function getProjects(c: Context) {
     .where(eq(projectsTable.createdBy, user.id));
 
   return c.json({ data: projects });
+}
+
+export async function getProjectByName(c: Context) {
+  const { name } = c.req.param();
+  if (!name) return c.json({ message: 'Project Id not found!' }, 201);
+
+  const [project] = await db
+    .select()
+    .from(projectsTable)
+    .where(eq(projectsTable.name, name))
+    .limit(1);
+
+  if (!project) return c.json({ message: 'Project not found' }, 404);
+
+  return c.json({ data: project });
 }
 
 export async function createProject(c: Context) {
@@ -40,9 +55,12 @@ export async function deleteProject(c: Context) {
   const { id } = c.req.param();
   if (!id) return c.json({ message: 'Project Id not found!' }, 201);
 
-  const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, id)).limit(1);
-  if (!project || project.createdBy !== user.id)
-    return c.json({ message: 'Project not found' }, 404);
+  const [project] = await db
+    .select()
+    .from(projectsTable)
+    .where(and(eq(projectsTable.id, id), eq(projectsTable.createdBy, user.id)))
+    .limit(1);
+  if (!project) return c.json({ message: 'Project not found' }, 404);
 
   await db.delete(projectsTable).where(eq(projectsTable.id, id));
 

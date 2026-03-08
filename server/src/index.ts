@@ -11,7 +11,19 @@ import { projectRoutes } from './routes/projects.js';
 const app = new Hono().basePath('/api');
 
 app.use(logger());
-app.use(cors({ origin: process.env.CLIENT_URL!, credentials: true }));
+app.use(
+  cors({
+    origin: origin => {
+      const clientUrl = process.env.CLIENT_URL!;
+      const { host } = new URL(clientUrl);
+      if (origin === clientUrl || origin.endsWith(`.${host}`)) {
+        return origin;
+      }
+      return null;
+    },
+    credentials: true,
+  }),
+);
 app.use('/inngest', inngestServe({ client: inngest, functions: [analyzeReadmeFlow] }));
 
 app.route('/auth', authRoutes);
