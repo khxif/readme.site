@@ -23,14 +23,12 @@ export async function createProject(c: Context) {
 
   const [project] = await db
     .insert(projectsTable)
-    .values({ name, githubUrl, createdBy: user.id })
+    .values({ name, githubUrl, createdBy: user.id, status: 'PENDING' })
     .returning();
 
   await inngest.send({
     name: 'readme/analyze',
-    data: {
-      githubUrl,
-    },
+    data: { projectId: project.id, githubUrl },
   });
 
   return c.json({ message: 'Project Created Sucessfully!' }, 201);
