@@ -1,4 +1,6 @@
-import { cleanReadme, extractItems, parseGithubUrl } from '../lib/parser.js';
+import 'dotenv/config';
+import { fetchReadme } from '../lib/fetch-readme.js';
+import { cleanReadme, compileToJs, createRuntimeHtml, extractItems } from '../lib/parser.js';
 import { analyzeReadmeAgent, codeGeneratorAgent } from './agents.js';
 import { inngest } from './client.js';
 
@@ -7,16 +9,9 @@ export const analyzeReadmeFlow = inngest.createFunction(
   { event: 'readme/analyze' },
   async ({ event, step }) => {
     const { cleaned, items } = await step.run('clean-readme', async () => {
-      
       const githubUrl = event.data.githubUrl as string;
-      const { owner, repo } = parseGithubUrl(githubUrl);
 
-      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme`, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-        },
-      });
-      const data = await res.json();
+      const data = await fetchReadme(githubUrl);
       const rawReadme = Buffer.from(data.content, 'base64').toString('utf-8');
 
       const items = extractItems(rawReadme);
@@ -57,8 +52,13 @@ Render all sections present in JSON (Hero → CodeExamples → Features → CTA)
 
     if (typeof codeContent !== 'string') throw new Error('Invalid code response');
 
-    console.log(codeContent);
+    const { html } = await step.run('compile-code', async () => {
+      const compiled = await compileToJs(codeContent);
+      const html = createRuntimeHtml(compiled);
 
-    return { json: JSON.parse(jsonStr), codeContent };
+      return { html };
+    });
+
+    return { html, codeContent };
   },
 );

@@ -15,6 +15,7 @@
     "@supabase/supabase-js": "^2.98.0",
     "dotenv": "^17.3.1",
     "drizzle-orm": "^0.45.1",
+    "esbuild": "^0.27.3",
     "hono": "^4.12.3",
     "inngest": "^3.52.5",
     "pg": "^8.20.0"

@@ -1,4 +1,5 @@
 import { createAgent, openai } from '@inngest/agent-kit';
+import 'dotenv/config'
 
 export const analyzeReadmeAgent = createAgent({
   name: 'README Analyzer',

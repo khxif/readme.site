@@ -1,9 +1,8 @@
+import * as esbuild from 'esbuild';
+
 export function parseGithubUrl(url: string) {
   const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
-
-  if (!match) {
-    throw new Error('Invalid GitHub URL');
-  }
+  if (!match) throw new Error('Invalid GitHub URL');
 
   return {
     owner: match[1],
@@ -153,4 +152,61 @@ export function cleanReadme(markdown: string) {
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
   return cleaned.trim();
+}
+
+export async function compileToJs(code: string) {
+  const result = await esbuild.transform(code, {
+    loader: 'tsx',
+    format: 'esm',
+    jsx: 'transform',
+    target: 'es2020',
+  });
+
+  return result.code;
+}
+
+export function createRuntimeHtml(compiledCode: string) {
+  const sanitized = compiledCode
+    .replace(/import\s+.*?from\s+["'][^"']+["'];?/g, '')
+    .replace(/export\s+default\s+/g, '')
+    .replace(/export\s+\{[^}]+\};?/g, '');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  font-family:Inter,system-ui,sans-serif;
+}
+</style>
+
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="module">
+
+import React, { useState } from "https://esm.sh/react@18"
+import ReactDOM from "https://esm.sh/react-dom@18/client"
+import { motion } from "https://esm.sh/framer-motion@10?deps=react@18"
+
+${sanitized}
+
+const root = document.getElementById("root")
+
+ReactDOM.createRoot(root).render(
+  React.createElement(LandingPage)
+)
+
+</script>
+
+</body>
+</html>
+`;
 }
