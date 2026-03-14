@@ -17,8 +17,8 @@ import { ProjectCard } from './project-card';
 
 export function DashboardView() {
   const queryClient = useQueryClient();
-  const { data: projects, isLoading, isError } = useGetProjects();
 
+  const { data: projects, isLoading, isError } = useGetProjects();
   const { mutateAsync, isPending } = useDeleteProjectMutation();
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -35,11 +35,11 @@ export function DashboardView() {
   const hasProjects = Array.isArray(projects) && projects.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-10">
-        {/* Page Header */}
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+       
+        <nav className="flex flex-col gap-6">
+          <nav className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               <h1 className="text-xl font-semibold tracking-tight text-foreground">Projects</h1>
               <p className="text-sm text-muted-foreground">Manage and organize your work</p>
@@ -53,10 +53,10 @@ export function DashboardView() {
               <Plus className="size-3.5" />
               New project
             </Button>
-          </div>
+          </nav>
 
           <Separator />
-        </div>
+        </nav>
 
         <section className="mt-8">
           {isLoading ? (
@@ -96,6 +96,6 @@ export function DashboardView() {
         onConfirm={handleDeleteConfirm}
         isPending={isPending}
       />
-    </div>
+    </main>
   );
 }
