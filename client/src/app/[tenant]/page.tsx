@@ -1,34 +1,163 @@
 'use client';
 
-import { Loading } from '@/components/ui/loading';
 import { useGetProjectByName } from '@/hooks/queries';
 import { useParams } from 'next/navigation';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Page() {
   const { tenant } = useParams();
-
   const { data, isLoading } = useGetProjectByName(tenant as string);
   const html = data?.code;
 
+  // Calculate progress based on loading state
+  const progress = isLoading ? 25 : data?.status === 'PENDING' ? 75 : 100;
+  const currentStepIndex = isLoading ? 0 : data?.status === 'PENDING' ? 2 : 3;
+
   return (
-    <main className="h-svh">
+    <main className="h-svh w-full bg-linear-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       {!isLoading ? (
-        <iframe
-          srcDoc={html}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-          }}
-        />
+        data?.status === 'PENDING' ? (
+          <Card className="w-full max-w-md border-primary/20 shadow-2xl shadow-primary/10 backdrop-blur-sm bg-card/80">
+            <CardHeader className="space-y-3 pb-6">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse" />
+                  <Spinner className="size-8 text-primary relative z-10" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Generating Your Project</CardTitle>
+                  <CardDescription>Almost ready... hang tight!</CardDescription>
+                </div>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {steps.map((step, index) => (
+                <StepIndicator
+                  key={step.id}
+                  step={step}
+                  status={
+                    index < currentStepIndex
+                      ? 'completed'
+                      : index === currentStepIndex
+                        ? 'current'
+                        : 'pending'
+                  }
+                  isActive={index <= currentStepIndex}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        ) : (
+          <iframe
+            srcDoc={html}
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+            }}
+          />
+        )
       ) : (
-        <Loading />
+        <Card className="w-full max-w-md border-primary/20 shadow-2xl shadow-primary/10 backdrop-blur-sm bg-card/80">
+          <CardHeader className="space-y-3 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse" />
+                <Spinner className="size-8 text-primary relative z-10" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Starting Up</CardTitle>
+                <CardDescription>Preparing your workspace...</CardDescription>
+              </div>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {steps.map((step, index) => (
+              <StepIndicator
+                key={step.id}
+                step={step}
+                status={
+                  index < currentStepIndex
+                    ? 'completed'
+                    : index === currentStepIndex
+                      ? 'current'
+                      : 'pending'
+                }
+                isActive={index <= currentStepIndex}
+              />
+            ))}
+          </CardContent>
+        </Card>
       )}
     </main>
   );
 }
 
-// const html = {
-//   html: '\n<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8" />\n\n<style>\nhtml,body{\n  margin:0;\n  padding:0;\n  font-family:Inter,system-ui,sans-serif;\n}\n</style>\n\n</head>\n\n<body>\n<div id="root"></div>\n\n<script type="module">\n\nimport React, { useState } from "https://esm.sh/react@18"\nimport ReactDOM from "https://esm.sh/react-dom@18/client"\nimport { motion } from "https://esm.sh/framer-motion@10?deps=react@18"\n\n\n\nconst fadeUp = {\n  hidden: { opacity: 0, y: 20 },\n  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] } }\n};\nconst stagger = { show: { transition: { staggerChildren: 0.09 } } };\nconst data = {\n  hero: {\n    headline: "The open-source Calendly successor.",\n    subheadline: "Scheduling infrastructure for absolutely everyone. You are in charge of your own data, workflow, and appearance.",\n    cta: { label: "Learn more" }\n  },\n  features: [\n    {\n      title: "Full Control of Data and Workflow",\n      outcome: "Manage your events and data securely with self-hosted or hosted options, empowering you with complete customization."\n    },\n    {\n      title: "White-label and API-driven",\n      outcome: "Deploy on your own domain and brand your scheduling tool to fit your unique appearance and workflow needs."\n    },\n    {\n      title: "Open Source and Extensible",\n      outcome: "Benefit from a flexible platform built with modern technologies that you can customize and contribute to."\n    }\n  ],\n  codeExamples: [\n    {\n      label: "Clone the repository",\n      code: "git clone https://github.com/calcom/cal.com.git",\n      language: "sh"\n    },\n    {\n      label: "Install dependencies",\n      code: "yarn",\n      language: "sh"\n    }\n  ],\n  designSystem: {\n    colors: {\n      primary: "#0a0a0a",\n      accent: "#22c55e",\n      background: "#0a0a0a",\n      foreground: "#ffffff",\n      muted: "#555555"\n    },\n    radius: "md",\n    styleHint: "terminal"\n  }\n};\nconst RADIUS_MAP = {\n  xs: "6px",\n  sm: "8px",\n  md: "12px",\n  lg: "20px",\n  full: "9999px"\n};\nconst RADIUS = RADIUS_MAP[data.designSystem.radius] || "12px";\nfunction macosDots() {\n  return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6, padding: "0 0 12px 0" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 10, height: 10, borderRadius: "50%", background: "#f87171", display: "inline-block" } }), /* @__PURE__ */ React.createElement("span", { style: { width: 10, height: 10, borderRadius: "50%", background: "#fbbf24", display: "inline-block" } }), /* @__PURE__ */ React.createElement("span", { style: { width: 10, height: 10, borderRadius: "50%", background: "#34d399", display: "inline-block" } }));\n}\nfunction highlightCode(line, ds = data.designSystem.colors) {\n  const tokens = [];\n  let i = 0;\n  while (i < line.length) {\n    if (line[i] === "#") {\n      tokens.push({ type: "comment", value: line.slice(i) });\n      break;\n    }\n    if (line.slice(i).startsWith("git ")) {\n      tokens.push({ type: "keyword", value: "git" });\n      i += 3;\n      continue;\n    }\n    if (line.slice(i).startsWith("yarn")) {\n      tokens.push({ type: "keyword", value: "yarn" });\n      i += 4;\n      continue;\n    }\n    if (line.slice(i).startsWith("npm")) {\n      tokens.push({ type: "keyword", value: "npm" });\n      i += 3;\n      continue;\n    }\n    if (line[i] === \'"\' || line[i] === "\'") {\n      const quote = line[i];\n      let j2 = i + 1;\n      while (j2 < line.length && line[j2] !== quote) j2++;\n      tokens.push({ type: "string", value: line.slice(i, j2 + 1) });\n      i = j2 + 1;\n      continue;\n    }\n    if (/https?:\\/\\//.test(line.slice(i))) {\n      const match = line.slice(i).match(/https?:\\/\\/[^\\s]+/);\n      if (match) {\n        tokens.push({ type: "string", value: match[0] });\n        i += match[0].length;\n        continue;\n      }\n    }\n    if (/\\s/.test(line[i])) {\n      let j2 = i + 1;\n      while (j2 < line.length && /\\s/.test(line[j2])) j2++;\n      tokens.push({ type: "plain", value: line.slice(i, j2) });\n      i = j2;\n      continue;\n    }\n    let j = i + 1;\n    while (j < line.length && !/\\s|#|,|"|\'/.test(line[j])) j++;\n    tokens.push({ type: "identifier", value: line.slice(i, j) });\n    i = j;\n  }\n  return tokens.map((tok, idx) => {\n    let color = ds.foreground;\n    let fontStyle = {};\n    if (tok.type === "string") color = ds.accent;\n    if (tok.type === "keyword") {\n      color = ds.muted;\n      fontStyle.fontStyle = "italic";\n    }\n    if (tok.type === "comment") color = `rgba(85,85,85,0.5)`;\n    if (tok.type === "identifier") color = ds.foreground;\n    if (tok.type === "plain") color = ds.foreground;\n    return /* @__PURE__ */ React.createElement("span", { key: idx, style: { color, ...fontStyle } }, tok.value);\n  });\n}\nfunction LandingPage() {\n  const ds = data.designSystem.colors;\n  const findKey = (headline) => {\n    const match = headline.match(/Calendly successor/);\n    if (!match) return headline;\n    const start = headline.slice(0, match.index);\n    const key = match[0];\n    const end = headline.slice((match.index || 0) + key.length);\n    return /* @__PURE__ */ React.createElement(React.Fragment, null, start, /* @__PURE__ */ React.createElement(\n      "span",\n      {\n        style: {\n          background: `linear-gradient(90deg, ${ds.accent}, ${ds.accent}B3)`,\n          WebkitBackgroundClip: "text",\n          WebkitTextFillColor: "transparent",\n          fontWeight: 900\n        }\n      },\n      key\n    ), end);\n  };\n  const codeBg = "#181818";\n  const [activeSnippet, setActiveSnippet] = useState(0);\n  const activeCode = data.codeExamples[activeSnippet];\n  const showLineNumbers = activeCode.code.split("\\n").length > 5;\n  return /* @__PURE__ */ React.createElement("div", { style: { background: ds.background, color: ds.foreground, minHeight: "100vh", fontFamily: "Inter, sans-serif" } }, /* @__PURE__ */ React.createElement(\n    motion.section,\n    {\n      variants: stagger,\n      initial: "hidden",\n      animate: "show",\n      style: {\n        display: "flex",\n        flexDirection: "row",\n        alignItems: "flex-start",\n        justifyContent: "space-between",\n        padding: "0 0 0 0",\n        minHeight: 620,\n        width: "100%",\n        background: `radial-gradient(circle at 0% 0%, ${ds.accent}14 0%, transparent 70%)`,\n        paddingLeft: 48,\n        paddingRight: 48,\n        paddingTop: 96,\n        paddingBottom: 96\n      }\n    },\n    /* @__PURE__ */ React.createElement(\n      motion.div,\n      {\n        variants: fadeUp,\n        style: {\n          width: "55%",\n          display: "flex",\n          flexDirection: "column",\n          justifyContent: "flex-start",\n          alignItems: "flex-start",\n          paddingRight: 40,\n          gap: 6\n        }\n      },\n      /* @__PURE__ */ React.createElement(\n        "h1",\n        {\n          style: {\n            fontSize: "clamp(2.75rem,6vw,4.5rem)",\n            fontWeight: 900,\n            lineHeight: 1.08,\n            margin: 0,\n            letterSpacing: "-2px",\n            marginBottom: "0.25em",\n            color: ds.foreground,\n            maxWidth: 820\n          }\n        },\n        findKey(data.hero.headline)\n      ),\n      /* @__PURE__ */ React.createElement(\n        "div",\n        {\n          style: {\n            fontSize: 22,\n            lineHeight: 1.35,\n            color: ds.muted,\n            maxWidth: 520,\n            marginTop: 20,\n            marginBottom: 38,\n            fontWeight: 400\n          }\n        },\n        data.hero.subheadline\n      ),\n      /* @__PURE__ */ React.createElement(\n        "a",\n        {\n          href: "#",\n          style: {\n            display: "inline-block",\n            background: ds.accent,\n            color: ds.foreground,\n            borderRadius: RADIUS,\n            padding: "14px 32px",\n            fontSize: "1.15rem",\n            fontWeight: 600,\n            letterSpacing: "-0.5px",\n            textDecoration: "none",\n            boxShadow: "none",\n            marginTop: 8,\n            transition: "filter 0.14s",\n            transitionProperty: "filter,background"\n          },\n          onMouseOver: (e) => e.currentTarget.style.filter = "brightness(1.10)",\n          onMouseOut: (e) => e.currentTarget.style.filter = "brightness(1.00)"\n        },\n        data.hero.cta.label\n      )\n    ),\n    /* @__PURE__ */ React.createElement(\n      motion.div,\n      {\n        variants: fadeUp,\n        style: {\n          width: "45%",\n          display: "flex",\n          justifyContent: "flex-end",\n          minWidth: 330,\n          minHeight: 230,\n          alignItems: "flex-start",\n          paddingLeft: 10\n        }\n      },\n      /* @__PURE__ */ React.createElement(\n        "div",\n        {\n          style: {\n            background: "#0d0d0d",\n            borderRadius: 24,\n            boxShadow: "0 16px 36px 0 rgba(0,0,0,0.24)",\n            border: `1px solid ${ds.muted}33`,\n            minWidth: 340,\n            minHeight: 180,\n            padding: "22px 24px 20px 24px",\n            display: "flex",\n            flexDirection: "column",\n            justifyContent: "flex-start",\n            alignItems: "stretch",\n            position: "relative"\n          }\n        },\n        /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 18, left: 18 } }, macosDots()),\n        /* @__PURE__ */ React.createElement(\n          "pre",\n          {\n            style: {\n              margin: 0,\n              padding: "36px 0 0 0",\n              fontFamily: "Menlo, Monaco, monospace",\n              fontSize: 15,\n              color: ds.foreground,\n              letterSpacing: "0px",\n              background: "none",\n              minHeight: 88,\n              lineHeight: "1.7"\n            }\n          },\n          highlightCode(data.codeExamples[0].code, ds)\n        )\n      )\n    )\n  ), data.codeExamples && data.codeExamples.length > 0 && /* @__PURE__ */ React.createElement(\n    motion.section,\n    {\n      variants: stagger,\n      initial: "hidden",\n      animate: "show",\n      style: {\n        width: "100%",\n        background: codeBg,\n        paddingTop: 112,\n        paddingBottom: 112,\n        paddingLeft: 48,\n        paddingRight: 48,\n        minHeight: 0,\n        boxSizing: "border-box",\n        borderTop: `1px solid ${ds.muted}24`,\n        borderBottom: `1px solid ${ds.muted}24`\n      }\n    },\n    /* @__PURE__ */ React.createElement(motion.div, { variants: fadeUp, style: { maxWidth: 740, margin: "0 auto" } }, /* @__PURE__ */ React.createElement("h2", { style: {\n      color: ds.foreground,\n      fontSize: "2rem",\n      fontWeight: 700,\n      margin: 0,\n      marginBottom: 32,\n      textAlign: "left",\n      letterSpacing: "-1px"\n    } }, "Try it locally in seconds"), data.codeExamples.length > 1 && /* @__PURE__ */ React.createElement("div", { style: {\n      display: "flex",\n      gap: 16,\n      alignItems: "center",\n      marginBottom: 10\n    } }, data.codeExamples.map((ex, idx) => /* @__PURE__ */ React.createElement(\n      "button",\n      {\n        key: ex.label,\n        style: {\n          background: "none",\n          border: "none",\n          color: activeSnippet === idx ? ds.accent : ds.muted,\n          fontWeight: 600,\n          fontSize: 16,\n          borderRadius: RADIUS,\n          padding: "6px 18px",\n          cursor: "pointer",\n          borderBottom: activeSnippet === idx ? `2.5px solid ${ds.accent}` : `2.5px solid transparent`,\n          outline: "none",\n          transition: "color 0.16s, border-color 0.16s"\n        },\n        onClick: () => setActiveSnippet(idx)\n      },\n      ex.label\n    ))), /* @__PURE__ */ React.createElement(\n      "div",\n      {\n        style: {\n          background: "#0d0d0d",\n          borderRadius: 18,\n          padding: "28px 28px 20px 28px",\n          fontFamily: "Menlo, Monaco, monospace",\n          fontSize: 15,\n          color: ds.foreground,\n          marginTop: 14,\n          marginBottom: 0,\n          position: "relative",\n          boxShadow: "0 8px 32px 0 rgba(0,0,0,0.21)",\n          border: `1px solid ${ds.muted}33`,\n          minHeight: 76,\n          overflowX: "auto"\n        }\n      },\n      /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 18, left: 18 } }, macosDots()),\n      /* @__PURE__ */ React.createElement(\n        "pre",\n        {\n          style: {\n            margin: 0,\n            padding: "28px 0 0 0",\n            whiteSpace: "pre",\n            background: "none",\n            minHeight: 48,\n            fontFamily: "inherit",\n            fontSize: "inherit",\n            lineHeight: "1.7"\n          }\n        },\n        activeCode.code.split("\\n").map((line, li) => /* @__PURE__ */ React.createElement("div", { key: li, style: { display: "flex" } }, activeCode.code.split("\\n").length > 5 && /* @__PURE__ */ React.createElement(\n          "span",\n          {\n            style: {\n              color: "rgba(85,85,85,0.4)",\n              userSelect: "none",\n              width: 32,\n              marginRight: 18,\n              textAlign: "right",\n              display: "inline-block",\n              fontSize: 13\n            }\n          },\n          li + 1\n        ), /* @__PURE__ */ React.createElement("span", null, highlightCode(line, ds))))\n      )\n    ))\n  ), data.features && data.features.length > 0 && /* @__PURE__ */ React.createElement(\n    motion.section,\n    {\n      variants: stagger,\n      initial: "hidden",\n      animate: "show",\n      style: {\n        paddingTop: 116,\n        paddingBottom: 116,\n        paddingLeft: 48,\n        paddingRight: 48,\n        background: ds.background,\n        width: "100%",\n        boxSizing: "border-box"\n      }\n    },\n    /* @__PURE__ */ React.createElement(\n      motion.div,\n      {\n        variants: stagger,\n        style: {\n          width: "100%",\n          maxWidth: 1e3,\n          margin: "0 auto",\n          display: "flex",\n          flexDirection: "column",\n          gap: 0,\n          borderRadius: RADIUS,\n          overflow: "hidden",\n          boxSizing: "border-box"\n        }\n      },\n      data.features.map((feat, i) => /* @__PURE__ */ React.createElement(\n        motion.div,\n        {\n          key: feat.title,\n          variants: fadeUp,\n          style: {\n            display: "flex",\n            alignItems: "center",\n            gap: 0,\n            borderLeft: `4px solid ${ds.accent}${"CC"}`,\n            padding: "32px 36px 32px 28px",\n            background: "none",\n            cursor: "default",\n            transition: "transform 0.17s cubic-bezier(.25,.1,.25,1), box-shadow 0.13s",\n            boxSizing: "border-box"\n            // simple hover style, using js for brightness\n          },\n          onMouseOver: (e) => {\n            e.currentTarget.style.transform = "translateX(6px)";\n            e.currentTarget.style.borderLeft = `4px solid ${ds.accent}`;\n          },\n          onMouseOut: (e) => {\n            e.currentTarget.style.transform = "translateX(0px)";\n            e.currentTarget.style.borderLeft = `4px solid ${ds.accent}CC`;\n          }\n        },\n        /* @__PURE__ */ React.createElement(\n          "span",\n          {\n            style: {\n              color: ds.accent,\n              fontFamily: "Menlo, Monaco, monospace",\n              fontWeight: 700,\n              fontSize: 13,\n              marginRight: 24,\n              opacity: 0.94,\n              flexShrink: 0\n            }\n          },\n          `0${i + 1}`\n        ),\n        /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4 } }, /* @__PURE__ */ React.createElement(\n          "div",\n          {\n            style: {\n              color: ds.foreground,\n              fontWeight: 600,\n              fontSize: 21,\n              letterSpacing: "-0.6px"\n            }\n          },\n          feat.title\n        ), /* @__PURE__ */ React.createElement(\n          "div",\n          {\n            style: {\n              color: ds.muted,\n              fontSize: 16,\n              marginTop: 6,\n              fontWeight: 400,\n              letterSpacing: "-0.16px",\n              lineHeight: 1.58,\n              maxWidth: 680\n            }\n          },\n          feat.outcome\n        ))\n      )),\n      /* @__PURE__ */ React.createElement("div", { style: { width: "100%", height: 0 } }, data.features.length > 1 && data.features.slice(0, -1).map((_, idx) => /* @__PURE__ */ React.createElement(\n        "div",\n        {\n          key: idx,\n          style: {\n            width: "100%",\n            height: 1,\n            background: `${ds.muted}1A`,\n            marginLeft: 52\n          }\n        }\n      )))\n    )\n  ), /* @__PURE__ */ React.createElement(\n    motion.section,\n    {\n      variants: stagger,\n      initial: "hidden",\n      animate: "show",\n      style: {\n        width: "100%",\n        paddingTop: 96,\n        paddingBottom: 96,\n        background: `linear-gradient(0deg, ${ds.accent}1A 0%, ${ds.background} 100%)`,\n        display: "flex",\n        justifyContent: "center",\n        alignItems: "center"\n      }\n    },\n    /* @__PURE__ */ React.createElement(\n      motion.div,\n      {\n        variants: fadeUp,\n        style: {\n          display: "flex",\n          flexDirection: "column",\n          alignItems: "center"\n        }\n      },\n      /* @__PURE__ */ React.createElement(\n        "h2",\n        {\n          style: {\n            fontSize: "2.6rem",\n            fontWeight: 800,\n            color: ds.foreground,\n            marginBottom: 36,\n            letterSpacing: "-1px",\n            textAlign: "center",\n            lineHeight: 1.14,\n            maxWidth: 680\n          }\n        },\n        data.hero.cta.label\n      ),\n      /* @__PURE__ */ React.createElement(\n        "a",\n        {\n          href: "#",\n          style: {\n            display: "inline-block",\n            background: ds.accent,\n            color: ds.foreground,\n            borderRadius: RADIUS,\n            padding: "19px 44px",\n            fontSize: "1.25rem",\n            fontWeight: 700,\n            letterSpacing: "-0.5px",\n            textDecoration: "none",\n            boxShadow: "none",\n            transition: "filter 0.14s",\n            marginTop: 0\n          },\n          onMouseOver: (e) => e.currentTarget.style.filter = "brightness(1.10)",\n          onMouseOut: (e) => e.currentTarget.style.filter = "brightness(1.00)"\n        },\n        data.hero.cta.label\n      )\n    )\n  ));\n}\n\n\n\nconst root = document.getElementById("root")\n\nReactDOM.createRoot(root).render(\n  React.createElement(LandingPage)\n)\n\n</script>\n\n</body>\n</html>\n',
-// };
+const steps = [
+  { id: 1, title: 'Initializing', description: 'Setting up environment' },
+  { id: 2, title: 'Processing', description: 'Analyzing requirements' },
+  { id: 3, title: 'Generating', description: 'Creating your project' },
+  { id: 4, title: 'Finalizing', description: 'Polishing the results' },
+];
+
+function StepIndicator({
+  step,
+  status,
+  isActive,
+}: {
+  step: (typeof steps)[0];
+  status: 'completed' | 'current' | 'pending';
+  isActive: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        'relative flex items-start gap-3 transition-all duration-500',
+        isActive ? 'opacity-100' : 'opacity-40',
+      )}
+    >
+      <div className="relative shrink-0">
+        {status === 'completed' && (
+          <CheckCircle2 className="size-6 text-emerald-500 dark:text-emerald-400 transition-all duration-300 scale-100" />
+        )}
+        {status === 'current' && (
+          <Loader2 className="size-6 text-primary animate-spin transition-all duration-300" />
+        )}
+        {status === 'pending' && (
+          <Circle className="size-6 text-muted-foreground/50 transition-all duration-300" />
+        )}
+      </div>
+      <div className="flex flex-col">
+        <span
+          className={cn(
+            'text-sm font-medium transition-colors duration-300',
+            status === 'current'
+              ? 'text-primary'
+              : status === 'completed'
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-muted-foreground',
+          )}
+        >
+          {step.title}
+        </span>
+        <span
+          className={cn(
+            'text-xs transition-colors duration-300',
+            status === 'current' || status === 'completed'
+              ? 'text-muted-foreground'
+              : 'text-muted-foreground/50',
+          )}
+        >
+          {step.description}
+        </span>
+      </div>
+    </div>
+  );
+}
