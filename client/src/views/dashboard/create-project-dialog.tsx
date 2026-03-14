@@ -49,6 +49,13 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
     onOpenChange(false);
     toast.success('Project created');
+
+    const slug = values.name.toLowerCase().replace(/\s+/g, '-');
+    const url =
+      process.env.NODE_ENV === 'production'
+        ? `https://${slug}.${process.env.NEXT_PUBLIC_APP_URL!.replace(/^https?:\/\//, '')}`
+        : `http://${slug}.localhost:3000`;
+    window.location.replace(url);
   }
 
   return (
