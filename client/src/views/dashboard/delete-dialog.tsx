@@ -26,7 +26,7 @@ export function DeleteProjectDialog({
   isPending,
 }: DeleteProjectDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={isPending ? undefined : onOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="text-base font-semibold">

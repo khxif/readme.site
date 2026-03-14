@@ -58,8 +58,7 @@ export function DashboardView() {
           <Separator />
         </div>
 
-        {/* Content */}
-        <div className="mt-8">
+        <section className="mt-8">
           {isLoading ? (
             <div className="flex items-center justify-center py-24">
               <Spinner className="size-5 text-muted-foreground" />
@@ -84,7 +83,7 @@ export function DashboardView() {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
 
       <CreateProjectDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
