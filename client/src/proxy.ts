@@ -1,23 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export function proxy(req: NextRequest) {
-  const host = req.headers.get('host') || '';
-  const hostname = host.split(':')[0];
+  const host = req.headers.get("host") || "";
+  const hostname = host.split(":")[0];
 
-  const parts = hostname.split('.');
-
+  const parts = hostname.split(".");
   let subdomain: string | null = null;
 
-  if (hostname.includes('localhost')) {
-    // abc.localhost
+  // localhost → abc.localhost:3000
+  if (hostname.includes("localhost")) {
     if (parts.length > 1) subdomain = parts[0];
-  } else if (!hostname.endsWith('vercel.app')) {
-    // production domain: abc.myapp.com
+  }
+
+  // vercel preview → abc.project.vercel.app
+  else if (hostname.endsWith("vercel.app")) {
+    if (parts.length > 3) subdomain = parts[0];
+  }
+
+  // custom domain → abc.domain.com
+  else {
     if (parts.length > 2) subdomain = parts[0];
   }
 
-  // Ignore main domain
-  if (!subdomain || subdomain === 'www') {
+  // ignore root
+  if (!subdomain || subdomain === "www") {
     return NextResponse.next();
   }
 
@@ -28,5 +34,7 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|favicon.ico).*)'],
+  matcher: [
+    "/((?!api|_next|_static|_vercel|favicon.ico).*)",
+  ],
 };
