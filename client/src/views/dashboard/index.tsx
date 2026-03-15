@@ -8,6 +8,7 @@ import { useGetProjects } from '@/hooks/queries';
 import { queryKeys } from '@/hooks/query-keys';
 import { useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { CreateProjectDialog } from './create-project-dialog';
@@ -16,6 +17,7 @@ import { EmptyState } from './empty-state';
 import { ProjectCard } from './project-card';
 
 export function DashboardView() {
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, isError } = useGetProjects();
@@ -37,7 +39,6 @@ export function DashboardView() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-10">
-       
         <nav className="flex flex-col gap-6">
           <nav className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
@@ -47,7 +48,15 @@ export function DashboardView() {
 
             <Button
               size="sm"
-              onClick={() => setShowCreateDialog(true)}
+              disabled={isLoading}
+              onClick={() => {
+                if (!isLoading && hasProjects) {
+                  toast.info('You can only create only one project for now. Pro plan coming soon!');
+                  router.push('/pricing');
+                  return;
+                }
+                setShowCreateDialog(true);
+              }}
               className="self-start gap-2 sm:self-auto"
             >
               <Plus className="size-3.5" />
