@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const ROOT_DOMAIN =
   process.env.NEXT_PUBLIC_ROOT_DOMAIN || "vercel.app";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const host = req.headers.get("host") || "";
   const hostname = host.split(":")[0];
 
