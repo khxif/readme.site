@@ -23,6 +23,7 @@ import { queryKeys } from '@/hooks/query-keys';
 import { createProjectSchema, CreateProjectSchemaType } from '@/zod-schemas/project';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -32,7 +33,9 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
+
   const { mutateAsync, isPending } = useCreateProjectMutation();
 
   const form = useForm<CreateProjectSchemaType>({
@@ -45,17 +48,11 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
   async function handleSubmit(values: CreateProjectSchemaType) {
     await mutateAsync(values);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
-
     onOpenChange(false);
-    toast.success('Project created');
+    router.push(`/${values.name}`);
 
-    const slug = values.name.toLowerCase().replace(/\s+/g, '-');
-    const url =
-      process.env.NODE_ENV === 'production'
-        ? `https://${slug}.${process.env.NEXT_PUBLIC_APP_URL!.replace(/^https?:\/\//, '')}`
-        : `http://${slug}.localhost:3000`;
-    window.location.replace(url);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+    toast.success('Project created');
   }
 
   return (

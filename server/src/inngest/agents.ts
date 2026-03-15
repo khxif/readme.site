@@ -1,99 +1,96 @@
-import { createAgent, openai } from '@inngest/agent-kit';
-import 'dotenv/config'
+import { createAgent, openai } from "@inngest/agent-kit";
+import "dotenv/config";
 
 export const analyzeReadmeAgent = createAgent({
-  name: 'README Analyzer',
+  name: "README Analyzer",
   system: `
-Convert README to landing page JSON. Output JSON only, no prose.
+Extract landing page content from a README.
 
-EXTRACT (only if data exists):
-- hero: { headline, subheadline, cta: { label } }
-- features: max 3, each: { title, outcome } — outcome-focused, no buzzwords
-- codeExamples: max 2 real-usage snippets, each: { label, code, language }. null if none.
+Rules
+- Use only README information.
+- Do not invent marketing text.
+- Prefer README headings as titles.
+- Ignore install/setup unless essential.
+- Return VALID JSON only.
 
-DESIGN SYSTEM — infer from domain:
-- CLI/terminal → background:#0a0a0a, accent: #22c55e or #06b6d4
-- UI library → background:#ffffff, accent: strong indigo or slate
-- API/SDK/infra → background:#080c14, accent: #6366f1 or #3b82f6
-- SaaS app → background:#0f0f0f, accent: derive from brand
-- 1 accent only. High contrast foreground. Never arbitrary colors.
-
-Return:
+Schema
 {
-  hero, features, codeExamples,
-  designSystem: {
-    colors: { primary, accent, background, foreground, muted },
-    radius: "sm|md|lg",
-    styleHint: "terminal|minimal|gradient|editorial"
-  }
+ hero:{headline,subheadline,primaryCta},
+ features:[{title,description}],       // max 4
+ codeExamples:[{label,language,code}], // max 2
+ sections:[{title,content}],           // optional
+ images:[url]                          // max 3
 }
 `,
-  model: openai({
-    model: 'gpt-4.1-mini',
-  }),
+  model: openai({ model: "gpt-4.1-mini" }),
 });
 
 export const codeGeneratorAgent = createAgent({
-  name: 'Code Generator',
+  name: "Code Generator",
   system: `
-You are a senior frontend engineer at a premium SaaS company. Generate production-grade landing page TSX.
+Generate a premium landing page React component.
 
-ABSOLUTE RULES:
-- Content from JSON only. Never invent text.
-- Section order: Hero → CodeExamples (if exists) → Features (if exists) → CTA strip
-- Do NOT skip sections present in JSON. Render all of them.
-- Colors: designSystem.colors ONLY. Zero hardcoded Tailwind color classes (no bg-blue-500, text-gray-400, etc). Use inline style for colors.
-- Imports: React and framer-motion only.
-- Output: raw TSX, single component, no markdown, no explanation.
+Input
+PAGE_DATA: landing page content
+THEME: design tokens
 
-ANIMATION — define once at file top:
-const fadeUp={hidden:{opacity:0,y:20},show:{opacity:1,y:0,transition:{duration:0.5,ease:[0.25,0.1,0.25,1]}}};
-const stagger={show:{transition:{staggerChildren:0.09}}};
-- Every section root: <motion.section variants={stagger} initial="hidden" animate="show">
-- Direct children: variants={fadeUp}
-- Feature cards: variants={stagger} on list, variants={fadeUp} on each card
-- No other motion usage.
+Rules
+- Use only PAGE_DATA text.
+- Do not invent content.
+- Render all sections present.
+- Output valid React JavaScript.
 
-HERO:
-- Two-column layout: text left 55%, visual right 45%. Not centered.
-- Headline: text-6xl md:text-7xl font-black leading-tight. Key phrase in <span> with gradient: from accent to accent/70, bg-clip-text text-transparent.
-- Subheadline: text-xl color muted, max 2 lines, mt-5
-- CTA: accent bg, foreground text, px-8 py-3.5, rounded per designSystem.radius, font-semibold, hover:brightness-110 transition-all
-- Right visual: if codeExamples → first snippet in terminal card (bg #0d0d0d, rounded-2xl, shadow-2xl, border 1px solid muted/20, macOS dots top-left)
-- Section bg: radial-gradient from accent/8 at top-left corner to transparent
+CRITICAL
+- NO markdown fences
+- NO TypeScript
+- NO type declarations
+- NO interfaces
+- NO extra explanations
+- Only one default component export.
 
-CODE SECTION (render before Features):
-- Background: 1 step darker/lighter than page bg (use inline style)
-- Heading: left-aligned, text-3xl font-bold
-- If multiple snippets: tab bar with pill buttons, active tab underlined with accent
-- Code card: bg #0d0d0d, rounded-xl, p-6, font-mono text-sm, leading-7, overflow-x-auto
-- Syntax coloring via <span style={{color}}> per token type:
-  strings → accent. keywords → muted italic. comments → muted/50. identifiers → foreground.
-- Line numbers (if >5 lines): muted/40, select-none, inline-block w-8 mr-4
-- macOS dots row at card top
-- Section feels like a live product demo. Not documentation.
+Stack
+React + Tailwind v4.
 
-FEATURES:
-- Full-width list. NOT a centered card grid.
-- Each row: thin accent left border (4px) | feature number in accent (text-xs font-mono) | title font-semibold | outcome text-sm muted
-- Hover: translate-x-1.5 transition-transform, accent border brightens
-- Rows separated by 1px muted/10 divider
-- Restrained and confident — no icons, no shadows, no cards.
+Theme
+Use colors from THEME.colors.
+Never hardcode colors.
 
-CTA STRIP:
-- Full-width, py-24, background: accent at 10% opacity over page bg, or solid dark variant
-- Centered: large headline (from hero.cta.label context) + single button
-- Button: large, high contrast, px-10 py-4
-- No extra copy, no sub-text clutter
+Layout order
+Hero → CodeExamples → Features → Sections → CTA
 
-QUALITY BAR:
-- Each section has a distinct visual language: split | full-bleed dark | list rows | strip
-- Section padding: py-28 to py-32 consistently
-- Typography hierarchy: display → heading → body → caption
-- radius applied consistently from designSystem.radius
-- Stripe/Linear/Vercel aesthetic — premium without decoration excess
+Layout
+Hero
+grid md:grid-cols-2 gap-12 items-center
+headline: text-6xl md:text-7xl font-bold tracking-tight
+
+Features
+grid md:grid-cols-3 gap-8
+cards: bg-card border border-border rounded-lg p-6
+
+Code
+bg-card border border-border rounded-lg p-6
+font-mono overflow-x-auto
+
+Sections
+max-w-3xl mx-auto text-center
+
+CTA
+centered primary button
+
+Spacing
+hero: py-32
+sections: py-24
+container: max-w-6xl mx-auto px-6
+
+Animation
+Use subtle framer-motion fade or slide.
+
+Style
+Clean modern SaaS design (Stripe / Vercel / Linear).
+
+Output
+Return raw React component code only.
+No markdown.
 `,
-  model: openai({
-    model: 'gpt-4.1',
-  }),
+  model: openai({ model: "gpt-4.1" }),
 });

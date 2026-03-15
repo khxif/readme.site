@@ -18,7 +18,10 @@ export default function Page() {
   const currentStepIndex = isLoading ? 0 : data?.status === 'PENDING' ? 2 : 3;
 
   return (
-    <main className="h-svh w-full bg-linear-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <main
+      className="h-svh w-full bg-linear-to-br from-background via-background to-primary/5 
+    flex items-center justify-center"
+    >
       {!isLoading ? (
         data?.status === 'PENDING' ? (
           <Card className="w-full max-w-md border-primary/20 shadow-2xl shadow-primary/10 backdrop-blur-sm bg-card/80">

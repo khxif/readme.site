@@ -6,6 +6,7 @@ import { fetchReadme } from '../lib/fetch-readme.js';
 import { cleanReadme, compileToJs, createRuntimeHtml, extractItems } from '../lib/parser.js';
 import { analyzeReadmeAgent, codeGeneratorAgent } from './agents.js';
 import { inngest } from './client.js';
+import { designSystem } from '../lib/design-system.js';
 
 export const analyzeReadmeFlow = inngest.createFunction(
   { id: 'analyze-readme' },
@@ -27,15 +28,22 @@ export const analyzeReadmeFlow = inngest.createFunction(
         return { cleaned, items };
       });
 
-      const prompt = `README:
+      const prompt = `
+README_CONTENT
 ${cleaned}
 
-CODE (real usage only, skip install/setup):
+HEADINGS
+${items.headings?.join('\n') || 'none'}
+
+CODE EXAMPLES
 ${items.codeBlocks?.slice(0, 3).join('\n---\n') || 'none'}
 
-IMAGES: ${items.images.slice(0, 3).join(', ') || 'none'}
+IMAGES
+${items.images?.slice(0, 3).join('\n') || 'none'}
 
-Extract hero, features (max 3), codeExamples (max 2). Infer designSystem from domain. JSON only.`;
+Extract landing page sections using the schema in system instructions.
+`;
+
       const { output } = await analyzeReadmeAgent.run(prompt);
 
       const lastMessage = output[output.length - 1];
@@ -43,15 +51,25 @@ Extract hero, features (max 3), codeExamples (max 2). Infer designSystem from do
 
       if (typeof content !== 'string') throw new Error('Invalid response from agent');
 
-      const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/\{[\s\S]*\}/);
+      const jsonMatch =
+        content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\{[\s\S]*\}$/);
       const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
 
-      const uiPrompt = `JSON:
+      const uiPrompt = `
+PAGE_DATA
 ${jsonStr}
 
-IMAGES: ${items.images.slice(0, 3).join(', ') || 'none'}
+THEME
+${JSON.stringify(designSystem.themes[0])}
 
-Render all sections present in JSON (Hero → CodeExamples → Features → CTA). Use designSystem.colors for all styling. Raw TSX only.`;
+Render sections in this order:
+Hero, CodeExamples, Features, Sections, CTA.
+
+Use only PAGE_DATA content.
+Use colors from THEME.
+
+Return raw TSX only.
+`;
       const { output: codeOutput } = await codeGeneratorAgent.run(uiPrompt);
 
       const lastCodeMessage = codeOutput[codeOutput.length - 1];

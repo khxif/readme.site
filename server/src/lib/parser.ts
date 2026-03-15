@@ -177,6 +177,8 @@ export function createRuntimeHtml(compiledCode: string) {
 <head>
 <meta charset="UTF-8" />
 
+<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
 html,body{
   margin:0;
@@ -192,7 +194,7 @@ html,body{
 
 <script type="module">
 
-import React, { useState } from "https://esm.sh/react@18"
+import React from "https://esm.sh/react@18"
 import ReactDOM from "https://esm.sh/react-dom@18/client"
 import { motion } from "https://esm.sh/framer-motion@10?deps=react@18"
 
