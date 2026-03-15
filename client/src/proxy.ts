@@ -1,33 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function proxy(req: NextRequest) {
+const ROOT_DOMAIN =
+  process.env.NEXT_PUBLIC_ROOT_DOMAIN || "vercel.app";
+
+export function middleware(req: NextRequest) {
   const host = req.headers.get("host") || "";
   const hostname = host.split(":")[0];
 
-  const parts = hostname.split(".");
   let subdomain: string | null = null;
 
-  // localhost → abc.localhost:3000
+  // localhost (tenant.localhost:3000)
   if (hostname.includes("localhost")) {
+    const parts = hostname.split(".");
     if (parts.length > 1) subdomain = parts[0];
   }
 
-  // vercel preview → abc.project.vercel.app
-  else if (hostname.endsWith("vercel.app")) {
-    if (parts.length > 3) subdomain = parts[0];
+  // production / vercel
+  else if (hostname.endsWith(ROOT_DOMAIN)) {
+    subdomain = hostname.replace(`.${ROOT_DOMAIN}`, "");
   }
 
-  // custom domain → abc.domain.com
+  // custom domains
   else {
+    const parts = hostname.split(".");
     if (parts.length > 2) subdomain = parts[0];
   }
 
-  // ignore root
-  if (!subdomain || subdomain === "www") {
+  // root domain
+  if (!subdomain || subdomain === "www" || subdomain === ROOT_DOMAIN) {
     return NextResponse.next();
   }
 
   const url = req.nextUrl.clone();
+
   url.pathname = `/${subdomain}${url.pathname}`;
 
   return NextResponse.rewrite(url);
