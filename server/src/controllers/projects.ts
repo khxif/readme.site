@@ -32,9 +32,22 @@ export async function getProjectByName(c: Context) {
 
 export async function createProject(c: Context) {
   const user = c.get('user');
+  if (user?.projects?.length >= 1) {
+    return c.json(
+      { message: 'You can only create one project for now. Pro plan coming soon!' },
+      400,
+    );
+  }
 
   const { name, githubUrl } = await c.req.json();
   if (!name || !githubUrl) return c.json({ message: 'Project name is required' }, 400);
+
+  const [existingProject] = await db
+    .select()
+    .from(projectsTable)
+    .where(eq(projectsTable.name, name))
+    .limit(1);
+  if (existingProject) return c.json({ message: 'Project with this name already exists' }, 400);
 
   const [project] = await db
     .insert(projectsTable)

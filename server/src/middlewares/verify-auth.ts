@@ -4,7 +4,7 @@ import { db } from '../db/index.js';
 import { usersTable } from '../db/schema.js';
 import { supabase } from '../supabase/client.js';
 
-type Variables = {
+export type Variables = {
   user: typeof usersTable.$inferSelect;
 };
 
@@ -27,8 +27,6 @@ export const verifyAuth = createMiddleware<{ Variables: Variables }>(async (c, n
     .from(usersTable)
     .where(eq(usersTable.authProviderId, user.user_metadata.provider_id))
     .limit(1);
-
-  console.log(dbUser);
 
   if (!dbUser) return c.json({ message: 'User not found' }, 401);
   c.set('user', dbUser);

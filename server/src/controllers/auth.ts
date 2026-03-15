@@ -2,26 +2,42 @@ import { eq } from 'drizzle-orm';
 import type { Context } from 'hono';
 import { db } from '../db/index.js';
 import { usersTable } from '../db/schema.js';
+import { supabase } from '../supabase/client.js';
 
 export async function googleLogin(c: Context) {
-  const user = c.get('user');
-  if (!user) return c.json({ message: 'User not found in context' }, 400);
+  const authHeader = c.req.header('authorization');
+
+  if (!authHeader || !authHeader.startsWith('Bearer '))
+    return c.json({ message: 'Missing authorization token' }, 401);
+
+  const token = authHeader.split(' ')[1];
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || !user) return c.json({ message: 'Invalid or expired token' }, 401);
+
+  if (!user.email) return c.json({ message: 'Email not provided by provider' }, 400);
+  const email = user.email;
 
   const [existingUser] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.email, user?.email))
+    .where(eq(usersTable.email, email))
     .limit(1);
+  if (existingUser) return c.json({ message: 'User already exists' }, 200);
 
-  if (existingUser) return c.json({ message: 'User already exists' }, 201);
+  const metadata = user.user_metadata 
 
   const [newUser] = await db
     .insert(usersTable)
     .values({
-      name: user?.name,
-      email: user?.email,
-      profilePicture: user?.profilePicture,
-      authProviderId: user?.authProviderId,
+      name: metadata.full_name ?? metadata.name ?? null,
+      email: email,
+      profilePicture: metadata.avatar_url ?? null,
+      authProviderId: metadata.provider_id,
     })
     .returning();
 
