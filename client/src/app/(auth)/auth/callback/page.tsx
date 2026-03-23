@@ -24,7 +24,7 @@ export default function CallbackPage() {
       const { data, error } = await supabase.auth.getSession();
       console.log(error);
       console.log(data);
-      if (error || !data.session) {
+      if (error) {
         toast.error('Authentication failed. Please try again.');
         router.push('/auth/login');
         return;
