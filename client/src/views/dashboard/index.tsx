@@ -15,6 +15,7 @@ import { CreateProjectDialog } from './create-project-dialog';
 import { DeleteProjectDialog } from './delete-dialog';
 import { EmptyState } from './empty-state';
 import { ProjectCard } from './project-card';
+import { UserButton } from './user-button';
 
 export function DashboardView() {
   const router = useRouter();
@@ -39,33 +40,36 @@ export function DashboardView() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-6 py-10">
-        <nav className="flex flex-col gap-6">
-          <nav className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               <h1 className="text-xl font-semibold tracking-tight text-foreground">Projects</h1>
               <p className="text-sm text-muted-foreground">Manage and organize your work</p>
             </div>
 
-            <Button
-              size="sm"
-              disabled={isLoading}
-              onClick={() => {
-                if (!isLoading && hasProjects) {
-                  toast.info('You can only create only one project for now. Pro plan coming soon!');
-                  router.push('/pricing');
-                  return;
-                }
-                setShowCreateDialog(true);
-              }}
-              className="self-start gap-2 sm:self-auto"
-            >
-              <Plus className="size-3.5" />
-              New project
-            </Button>
-          </nav>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <Button
+                size="sm"
+                disabled={isLoading}
+                onClick={() => {
+                  if (!isLoading && hasProjects) {
+                    toast.info('You can only create only one project for now. Pro plan coming soon!');
+                    router.push('/pricing');
+                    return;
+                  }
+                  setShowCreateDialog(true);
+                }}
+                className="gap-2"
+              >
+                <Plus className="size-3.5" />
+                New project
+              </Button>
+              <UserButton />
+            </div>
+          </div>
 
           <Separator />
-        </nav>
+        </header>
 
         <section className="mt-8">
           {isLoading ? (

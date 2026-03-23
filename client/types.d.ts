@@ -15,6 +15,6 @@ interface Project {
   name: string;
   code: string;
   status: 'PENDING' | 'SUCCESS';
-  created_by: string;
-  github_url: string;
+  createdBy: string;
+  githubUrl: string;
 }
