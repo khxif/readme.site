@@ -14,3 +14,14 @@ export function getErrorMessage(error: Error) {
 
   return errorMessage;
 }
+
+export function getInitials(name?: string) {
+  if (!name) return 'U';
+
+  const segments = name.trim().split(/\s+/).filter(Boolean);
+  if (segments.length >= 2) {
+    return `${segments[0][0]}${segments[1][0]}`.toUpperCase();
+  }
+
+  return name.slice(0, 2).toUpperCase();
+}

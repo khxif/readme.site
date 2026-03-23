@@ -10,21 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getInitials } from '@/lib/utils';
 import { supabase } from '@/supabase/client';
 import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-function getInitials(nameOrEmail?: string) {
-  if (!nameOrEmail) return 'U';
-
-  const segments = nameOrEmail.trim().split(/\s+/).filter(Boolean);
-  if (segments.length >= 2) {
-    return `${segments[0][0]}${segments[1][0]}`.toUpperCase();
-  }
-
-  return nameOrEmail.slice(0, 2).toUpperCase();
-}
 
 export function UserButton() {
   const router = useRouter();
@@ -71,17 +61,16 @@ export function UserButton() {
           aria-label="Open user menu"
         >
           <Avatar size="lg">
-            <AvatarImage src={avatarUrl} alt={displayName ?? email ?? 'User avatar'} />
-            <AvatarFallback>{getInitials(displayName ?? email)}</AvatarFallback>
+            <AvatarImage src={avatarUrl} alt={displayName ?? 'User avatar'} />
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="space-y-0.5">
-          <p className="truncate text-sm font-medium text-foreground">{displayName || 'User'}</p>
-          <p className="truncate text-xs font-normal text-muted-foreground">
-            {email || 'No email'}
-          </p>
+          <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
+          <p className="truncate text-xs font-normal text-muted-foreground">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={handleLogout}>
