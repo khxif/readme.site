@@ -15,12 +15,18 @@ export function AuthProtected({ children }: { children: React.ReactNode }) {
 
       const { data } = await supabase.auth.getSession();
       setLoading(false);
-      
+
       if (!data.session) router.replace('/auth/login');
     }
 
     checkAuth();
   }, [router]);
 
-  return loading ? <Loading /> : children;
+  return loading ? (
+    <main className="flex min-h-screen items-center justify-center">
+      <Loading />
+    </main>
+  ) : (
+    children
+  );
 }

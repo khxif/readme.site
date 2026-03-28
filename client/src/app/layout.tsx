@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ReadmeToSite',
-  description: 'Turn your README into a premium SaaS landing page with polished design and production-ready Next.js output.',
+  title: 'Readme.Site',
+  description:
+    'Turn your README into a premium SaaS landing page with polished design and production-ready Next.js output.',
 };
 
 export default function RootLayout({

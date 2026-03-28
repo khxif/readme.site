@@ -2,8 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Project {
   id: string;
@@ -32,57 +34,59 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
+  const router = useRouter();
+
   const accent = getAccentColor(project.name);
   const initial = project.name.charAt(0).toUpperCase();
   const shortId = project.id.split('-')[0];
 
   return (
-    <Card
-      className={cn(
-        'group relative flex flex-col gap-0 rounded-xl border border-border bg-card py-0',
-        'shadow-xs transition-all duration-200',
-        'hover:shadow-md hover:-translate-y-0.5',
-      )}
-    >
-      {/* Top accent strip */}
-      <div className="h-1 w-full rounded-t-xl bg-linear-to-r from-primary/40 to-primary/10" />
+    <Link href={`${process.env.NEXT_PUBLIC_APP_URL}/${project.name}`}>
+      <Card
+        className={cn(
+          'group relative flex flex-col gap-0 rounded-xl border border-border bg-card py-0',
+          'shadow-xs transition-all duration-200',
+          'hover:shadow-md hover:-translate-y-0.5',
+        )}
+      >
+        {/* Top accent strip */}
+        <div className="h-1 w-full rounded-t-xl bg-linear-to-r from-primary/40 to-primary/10" />
 
-      <div className="flex flex-col gap-4 p-5">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-3">
-          {/* Initial badge */}
-          <div
-            className={cn(
-              'flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold',
-              accent.bg,
-              accent.text,
-            )}
-          >
-            {initial}
+        <div className="flex flex-col gap-4 p-5">
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-3">
+            {/* Initial badge */}
+            <div
+              className={cn(
+                'flex size-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold',
+                accent.bg,
+                accent.text,
+              )}
+            >
+              {initial}
+            </div>
+
+            {/* Delete button — visible on hover */}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10"
+              onClick={() => onDelete(project.id)}
+              aria-label={`Delete ${project.name}`}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
           </div>
 
-          {/* Delete button — visible on hover */}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(project.id)}
-            aria-label={`Delete ${project.name}`}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
+          {/* Project name */}
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-semibold leading-tight text-foreground line-clamp-2">
+              {project.name}
+            </h3>
+            <p className="font-mono text-xs text-muted-foreground/60">#{shortId}</p>
+          </div>
         </div>
-
-        {/* Project name */}
-        <div className="flex flex-col gap-1">
-          <h3 className="text-sm font-semibold leading-tight text-foreground line-clamp-2">
-            {project.name}
-          </h3>
-          <p className="font-mono text-xs text-muted-foreground/60">
-            #{shortId}
-          </p>
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }
