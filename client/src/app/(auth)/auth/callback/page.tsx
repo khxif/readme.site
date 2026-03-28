@@ -22,15 +22,14 @@ export default function CallbackPage() {
   useEffect(() => {
     async function handleAuth() {
       const { data, error } = await supabase.auth.getSession();
-      console.log(error);
-      console.log(data);
       if (error) {
         toast.error('Authentication failed. Please try again.');
         router.push('/auth/login');
         return;
       }
 
-      await mutateAsync();
+      if (!data.session) return;
+      await mutateAsync({ token: data.session.access_token });
 
       router.push('/dashboard');
       toast.success('Successfully signed in!');
