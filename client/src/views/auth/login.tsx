@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -60,19 +61,19 @@ export function LoginView() {
           <Separator />
           <p className="text-center text-[11px] text-muted-foreground leading-relaxed">
             By continuing, you agree to our{' '}
-            <a
+            <Link
               href="/terms"
               className="text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground transition-colors duration-150"
             >
               Terms of Service
-            </a>{' '}
+            </Link>{' '}
             and{' '}
-            <a
+            <Link
               href="/privacy"
               className="text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground transition-colors duration-150"
             >
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>
