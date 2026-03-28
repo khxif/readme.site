@@ -15,5 +15,6 @@ export function useGetProjectByName(name: string) {
     queryKey: [...queryKeys.projects, name],
     queryFn: () => getProjectByName(name),
     enabled: !!name,
+    refetchInterval: query => (query.state.data?.status === 'PENDING' ? 2000 : false),
   });
 }

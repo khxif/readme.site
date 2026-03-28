@@ -56,12 +56,15 @@ Extract landing page sections using the schema.
     const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/\{[\s\S]*\}$/);
     const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
 
+    const randomIndex = Math.floor(Math.random() * designSystem.themes.length);
+    const selectedTheme = designSystem.themes[randomIndex];
+
     const uiPrompt = `
 PAGE_DATA
 ${jsonStr}
 
 THEME
-${JSON.stringify(designSystem.themes[0])}
+${JSON.stringify(selectedTheme)}
 
 Render sections in this order:
 Hero, CodeExamples, Features, Sections, CTA.
