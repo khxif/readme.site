@@ -8,9 +8,9 @@ import { cleanReadme, compileToJs, createRuntimeHtml, extractItems } from '../li
 import { analyzeReadmeAgent, codeGeneratorAgent } from './agents.js';
 import { inngest } from './client.js';
 
-export const analyzeReadmeFlow = inngest.createFunction(
-  { id: 'analyze-readme' },
-  { event: 'readme/analyze' },
+export const readmeToWebpage = inngest.createFunction(
+  { id: 'readme-to-webpage' },
+  { event: 'readme/generate' },
   async ({ event, step }) => {
     if (!event.data.projectId || !event.data.githubUrl)
       throw new Error('Missing projectId or githubUrl in event data');

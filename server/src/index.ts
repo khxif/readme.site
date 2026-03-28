@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve as inngestServe } from 'inngest/hono';
 import { inngest } from './inngest/client.js';
-import { analyzeReadmeFlow } from './inngest/functions.js';
+import { readmeToWebpage } from './inngest/functions.js';
 import { authRoutes } from './routes/auth.js';
 import { projectRoutes } from './routes/projects.js';
 
@@ -24,7 +24,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use('/inngest', inngestServe({ client: inngest, functions: [analyzeReadmeFlow] }));
+app.use('/inngest', inngestServe({ client: inngest, functions: [readmeToWebpage] }));
 
 app.route('/auth', authRoutes);
 app.route('/projects', projectRoutes);

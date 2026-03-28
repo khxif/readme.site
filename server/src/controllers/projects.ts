@@ -55,11 +55,11 @@ export async function createProject(c: Context) {
     .returning();
 
   await inngest.send({
-    name: 'readme/analyze',
+    name: 'readme/generate',
     data: { projectId: project.id, githubUrl },
   });
 
-  return c.json({ message: 'Project Created Sucessfully!' }, 201);
+  return c.json({ message: 'Project Created Successfully!' }, 201);
 }
 
 export async function deleteProject(c: Context) {
