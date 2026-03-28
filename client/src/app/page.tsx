@@ -1,13 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { TextAnimate } from '@/components/ui/text-animate';
 import {
@@ -45,9 +38,6 @@ export default function HomePage() {
             </Link>
             <Link href="#preview" className="transition-colors hover:text-foreground">
               Preview
-            </Link>
-            <Link href="#pricing" className="transition-colors hover:text-foreground">
-              Pricing
             </Link>
           </nav>
 
@@ -419,66 +409,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="pricing" className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <Badge
-            variant="outline"
-            className="rounded-full px-3 py-1 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground"
-          >
-            Pricing
-          </Badge>
-          <h2 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Start simple, upgrade when the launch cadence grows.
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-muted-foreground">
-            Transparent pricing for solo builders and teams shipping polished product pages every
-            week.
-          </p>
-        </div>
-
-        <div className="mx-auto mt-14 grid max-w-5xl gap-5 lg:grid-cols-2">
-          {pricingTiers.map(tier => (
-            <Card
-              key={tier.name}
-              className={`border-border/70 py-0 shadow-sm ${tier.name === 'Pro' ? 'bg-card ring-1 ring-primary/15' : 'bg-card/70'}`}
-            >
-              <CardHeader className="gap-3 border-b border-border/70 px-6 py-6">
-                <div className="flex items-center justify-between gap-4">
-                  <CardTitle className="text-xl font-medium">{tier.name}</CardTitle>
-                  {tier.name === 'Pro' ? (
-                    <Badge className="rounded-full px-3 py-1">Most popular</Badge>
-                  ) : null}
-                </div>
-                <CardDescription className="text-base leading-7">
-                  {tier.description}
-                </CardDescription>
-                <div className="flex items-end gap-2 pt-2">
-                  <span className="text-4xl font-semibold tracking-tight">{tier.price}</span>
-                  <span className="pb-1 text-sm text-muted-foreground">
-                    {tier.price === '$0' ? '/month' : '/month per workspace'}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 py-6">
-                <ul className="space-y-3 text-sm text-muted-foreground">
-                  {tier.features.map(feature => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <Check className="mt-0.5 size-4 text-primary" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter className="px-6 pb-6">
-                <Button asChild variant={tier.variant} size="lg" className="w-full">
-                  <Link href={'#'}>{tier.cta}</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       <section className="px-6 pb-24 lg:px-8">
         <Card className="mx-auto max-w-7xl border-border/70 bg-[linear-gradient(180deg,oklch(from_var(--secondary)_l_c_h_/_0.35),transparent_110%),linear-gradient(135deg,oklch(from_var(--primary)_l_c_h_/_0.08),transparent_55%)] shadow-lg shadow-primary/5">
           <CardContent className="flex flex-col gap-8 px-6 py-14 text-center sm:px-10 lg:py-16">
@@ -521,7 +451,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium">ReadmeToSite</p>
+              <p className="text-sm font-medium">Readme.Site</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Premium product pages from the documentation you already maintain.
               </p>
@@ -539,7 +469,7 @@ export default function HomePage() {
             </div>
           </div>
           <Separator className="my-6" />
-          <p className="text-sm text-muted-foreground">© 2026 ReadmeToSite. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Readme.Site. All rights reserved.</p>
         </div>
       </footer>
     </main>
@@ -599,24 +529,5 @@ const testimonials = [
       'The structure is what impressed me. It reads like a real SaaS homepage, not an AI page trying to look premium.',
     name: 'Ava Patel',
     role: 'Developer Experience, MergeKit',
-  },
-];
-
-const pricingTiers = [
-  {
-    name: 'Starter',
-    price: '$0',
-    description: 'For personal projects and open-source launches.',
-    cta: 'Start free',
-    variant: 'outline' as const,
-    features: ['1 active site', 'README import', 'Basic theme editing', 'Community support'],
-  },
-  {
-    name: 'Premium',
-    price: '$19',
-    description: 'coming soon',
-    cta: 'Start Pro',
-    variant: 'default' as const,
-    features: ['Unlimited sites', 'Advanced sections', 'Custom domains', 'Priority generation'],
   },
 ];
