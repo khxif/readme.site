@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "inngest": "pnpm dlx inngest-cli@latest dev",
+    "inngest:dev": "pnpm dlx inngest-cli@latest dev",
     "build": "tsc",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
